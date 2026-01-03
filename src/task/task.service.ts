@@ -18,16 +18,14 @@ export class TaskService {
   ];
 
   create(createTaskDto: CreateTaskDto) {
-    console.log(createTaskDto);
-    this.tasks = [
-      ...this.tasks,
-      {
-        ...createTaskDto,
-        id: (this.tasks.at(-1)?.id || 0) + 1,
-        isCompleted: false,
-      },
-    ];
-    return 'This action adds a new task';
+    const newTask = {
+      ...createTaskDto,
+      id: (this.tasks.at(-1)?.id || 0) + 1,
+      isCompleted: false,
+    };
+
+    this.tasks.push(newTask);
+    return newTask;
   }
 
   findAll() {
@@ -36,26 +34,35 @@ export class TaskService {
 
   findOne(id: number) {
     const task = this.tasks.find((task) => task.id === id);
+
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
+
     return task;
   }
 
   update(id: number, updateTaskDto: UpdateTaskDto) {
-    this.tasks = this.tasks.map((task) => {
-      if (task.id === id) {
-        return {
-          ...task,
-          ...updateTaskDto,
-        };
-      }
-      return task;
-    });
-    return;
+    const task = this.findOne(id);
+
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    Object.assign(task, updateTaskDto);
+
+    return task;
   }
 
   remove(id: number) {
-    return (this.tasks = this.tasks.filter((task) => task.id !== id));
+    const currTask = this.findOne(id);
+
+    if (!currTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    this.tasks = this.tasks.filter((task) => task.id !== currTask.id);
+
+    return currTask;
   }
 }
